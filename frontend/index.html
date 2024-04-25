@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile Registration</title>
+</head>
+<body>
+    <h1>User Profile Registration</h1>
+    <form id="registrationForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br>
+
+        <label for="documentNumber">Document Number:</label>
+        <input type="text" id="documentNumber" name="documentNumber" required><br>
+
+        <label for="residence">Place of Residence:</label>
+        <input type="text" id="residence" name="residence" required><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <script src="UserProfile.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+
+    <script>
+        window.addEventListener('load', async () => {
+          // Initialize web3
+          if (window.ethereum) {
+            window.web3 = new Web3(ethereum);
+            await ethereum.enable();
+          } else if (window.web3) {
+            window.web3 = new Web3(web3.currentProvider);
+          } else {
+            console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+            return;
+          }
+    
+          // Set up contract
+          const contractAddress = '0xb67660c0EF652AF04458f35901D3E4a2596e3A65'; // Replace with your contract address
+          const contractAbi = UserProfileABI;
+          const contract = new web3.eth.Contract(contractAbi, contractAddress);
+    
+          // Add event listener to registration form
+          document.getElementById('registrationForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+    
+            // Get form data
+            const formData = new FormData(event.target);
+            const name = formData.get('name');
+            const age = formData.get('age');
+            const documentNumber = formData.get('documentNumber');
+            const residence = formData.get('residence');
+    
+            // Call smart contract function to register user profile
+            try {
+              const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+              const userAddress = accounts[0];
+    
+              await contract.methods.registerUserProfile(name, age, documentNumber, residence).send({ from: userAddress });
+              alert('User profile registered successfully!');
+            } catch (error) {
+              console.error(error);
+              alert('Failed to register user profile. Please try again.');
+            }
+          });
+        });
+    </script>
+</body>
+</html>
