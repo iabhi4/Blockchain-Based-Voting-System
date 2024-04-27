@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
+import "./UserProfile.sol";
 
 contract Ballot {
     //Defining an event log
@@ -31,10 +32,16 @@ contract Ballot {
     Proposal[] public proposals;
 
     /// Create a new ballot to choose one of `proposalNames`.
-    constructor(string[] memory proposalNames) {
+    constructor(
+        string[] memory proposalNames,
+        address userProfileContractAddress
+    ) {
         emit Log("Starting to deploy contract");
         chairperson = msg.sender;
         voters[chairperson].weight = 1;
+
+        // Set the address of the UserProfile contract
+        userProfile = UserProfile(userProfileContractAddress);
 
         // For each of the provided proposal names,
         // create a new proposal object and add it
@@ -48,6 +55,8 @@ contract Ballot {
             );
         }
     }
+
+    UserProfile public userProfile;
 
     // Give `voter` the right to vote on this ballot.
     // May only be called by `chairperson`.
@@ -118,7 +127,8 @@ contract Ballot {
 
     /// Give your vote (including votes delegated to you)
     /// to proposal `proposals[proposal].name`.
-    function vote(uint proposal) external {
+    function vote(uint proposal) public {
+        emit Log("tring to vote");
         Voter storage sender = voters[msg.sender];
         require(sender.weight != 0, "Has no right to vote");
         require(!sender.voted, "Already voted.");
@@ -148,5 +158,25 @@ contract Ballot {
     // returns the name of the winner
     function winnerName() external view returns (string memory winnerName_) {
         winnerName_ = proposals[winningProposal()].name;
+    }
+
+    function checkEligibilityToVote() external view returns (bool) {
+        require(
+            address(userProfile) != address(0),
+            "UserProfile contract address not set"
+        );
+        return userProfile.isEligibleToVote(msg.sender);
+    }
+
+    function getProposals() public view returns (string[] memory) {
+        string[] memory proposalNames = new string[](proposals.length);
+        for (uint i = 0; i < proposals.length; i++) {
+            proposalNames[i] = proposals[i].name;
+        }
+        return proposalNames;
+    }
+
+    function hasVoted(address user) public view returns (bool) {
+        return voters[user].voted;
     }
 }

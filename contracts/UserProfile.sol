@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 contract UserProfile {
@@ -8,38 +7,35 @@ contract UserProfile {
         uint256 age;
         string documentNumber;
         string residence;
+        bool eligibleToVote; // New parameter
     }
 
-    Profile[] private profiles;
+    Profile[] public profiles;
 
     event ProfileRegistered(
         address indexed userAddress,
         string name,
         uint256 age,
         string documentNumber,
-        string residence
+        string residence,
+        bool eligibleToVote
     );
 
+    // Function to register a user profile
     function registerUserProfile(
         string memory _name,
         uint256 _age,
         string memory _documentNumber,
         string memory _residence
     ) public {
-        // Check if user already has a profile
-        require(
-            profiles.length == 0 ||
-                profiles[profiles.length - 1].userAddress != msg.sender,
-            "User profile already exists"
-        );
-
         // Register user profile
         Profile memory newProfile = Profile(
             msg.sender,
             _name,
             _age,
             _documentNumber,
-            _residence
+            _residence,
+            false
         );
         profiles.push(newProfile);
 
@@ -49,29 +45,29 @@ contract UserProfile {
             _name,
             _age,
             _documentNumber,
-            _residence
+            _residence,
+            false
         );
+        //isEligibleToVote(msg.sender);
     }
 
-    function getProfileCount() public view returns (uint256) {
-        return profiles.length;
+    function isEligibleToVote(
+        address userAddress
+    ) external view returns (bool) {
+        return true;
     }
 
-    function getProfile(
-        uint256 index
-    )
-        public
-        view
-        returns (address, string memory, uint256, string memory, string memory)
-    {
-        require(index < profiles.length, "Profile index out of bounds");
-        Profile memory profile = profiles[index];
-        return (
-            profile.userAddress,
-            profile.name,
-            profile.age,
-            profile.documentNumber,
-            profile.residence
-        );
-    }
+    // Function to check if a user is eligible to vote
+    /*function isEligibleToVote(address userAddress) external returns (bool) {
+        // Implement logic to check government ID through API
+        // If government ID is valid, set eligibleToVote to true
+        // For now, let's assume the eligibility check is successful
+        for (uint256 i = 0; i < profiles.length; i++) {
+            if (profiles[i].userAddress == userAddress) {
+                profiles[i].eligibleToVote = true;
+                return true;
+            }
+        }
+        return false;
+    }*/
 }

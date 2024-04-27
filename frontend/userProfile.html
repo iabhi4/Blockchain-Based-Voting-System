@@ -40,7 +40,7 @@
           }
     
           // Set up contract
-          const contractAddress = '0x6bb33B519CfC2182EB65D63F90A95FBAB1E8B0e4'; // Replace with your contract address
+          const contractAddress = '0xb1707B4840e0F9Da4Aa12E53fe55232175b46A37'; // Replace with your contract address
           const contractAbi = UserProfileABI;
           const contract = new web3.eth.Contract(contractAbi, contractAddress);
     
@@ -59,7 +59,7 @@
             try {
               const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
               const userAddress = accounts[0];
-    
+              console.log(userAddress);
               await contract.methods.registerUserProfile(name, age, documentNumber, residence).send({ from: userAddress });
               alert('User profile registered successfully!');
             } catch (error) {

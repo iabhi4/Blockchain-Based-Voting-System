@@ -31,6 +31,12 @@ var UserProfileABI = [
         "internalType": "string",
         "name": "residence",
         "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "eligibleToVote",
+        "type": "bool"
       }
     ],
     "name": "ProfileRegistered",
@@ -46,6 +52,11 @@ var UserProfileABI = [
     ],
     "name": "profiles",
     "outputs": [
+      {
+        "internalType": "address",
+        "name": "userAddress",
+        "type": "address"
+      },
       {
         "internalType": "string",
         "name": "name",
@@ -65,6 +76,11 @@ var UserProfileABI = [
         "internalType": "string",
         "name": "residence",
         "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "eligibleToVote",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -98,5 +114,25 @@ var UserProfileABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "userAddress",
+        "type": "address"
+      }
+    ],
+    "name": "isEligibleToVote",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
   }
 ];
