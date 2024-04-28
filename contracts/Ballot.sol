@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 import "./UserProfile.sol";
 
@@ -10,6 +9,7 @@ contract Ballot {
     // be used for variables later.
     // It will represent a single voter.
     struct Voter {
+        address userAddress;
         uint weight; // weight is accumulated by delegation
         bool voted; // if true, that person already voted
         address delegate; // person delegated to
@@ -26,7 +26,7 @@ contract Ballot {
 
     // This declares a state variable that
     // stores a `Voter` struct for each possible address.
-    mapping(address => Voter) public voters;
+    Voter[] public voters;
 
     // A dynamically-sized array of `Proposal` structs.
     Proposal[] public proposals;
@@ -38,7 +38,15 @@ contract Ballot {
     ) {
         emit Log("Starting to deploy contract");
         chairperson = msg.sender;
-        voters[chairperson].weight = 1;
+        voters.push(
+            Voter({
+                userAddress: msg.sender,
+                weight: 1,
+                voted: false,
+                delegate: address(0),
+                vote: 0
+            })
+        );
 
         // Set the address of the UserProfile contract
         userProfile = UserProfile(userProfileContractAddress);
@@ -60,30 +68,23 @@ contract Ballot {
 
     // Give `voter` the right to vote on this ballot.
     // May only be called by `chairperson`.
-    function giveRightToVote(address voter) external {
-        // If the first argument of `require` evaluates
-        // to `false`, execution terminates and all
-        // changes to the state and to Ether balances
-        // are reverted.
-        // This used to consume all gas in old EVM versions, but
-        // not anymore.
-        // It is often a good idea to use `require` to check if
-        // functions are called correctly.
-        // As a second argument, you can also provide an
-        // explanation about what went wrong.
+    /*function giveRightToVote(address voter) external {
         require(
             msg.sender == chairperson,
             "Only chairperson can give right to vote."
         );
         require(!voters[voter].voted, "The voter already voted.");
         require(voters[voter].weight == 0);
-        voters[voter].weight = 1;
-    }
+        voters.push(
+            Voter({weight: 1, voted: false, delegate: address(0), vote: 0})
+        );
+    }*/
 
     /// Delegate your vote to the voter `to`.
-    function delegate(address to) external {
-        // assigns reference
-        Voter storage sender = voters[msg.sender];
+    function delegate(address to) public {
+        emit Log("Trying to delegate");
+        uint voterIndex = getVoterByAddress(msg.sender);
+        Voter storage sender = voters[voterIndex];
         require(sender.weight != 0, "You have no right to vote");
         require(!sender.voted, "You already voted.");
 
@@ -97,14 +98,17 @@ contract Ballot {
         // In this case, the delegation will not be executed,
         // but in other situations, such loops might
         // cause a contract to get "stuck" completely.
-        while (voters[to].delegate != address(0)) {
-            to = voters[to].delegate;
+        while (voters[getVoterByAddress(to)].delegate != address(0)) {
+            to = voters[getVoterByAddress(to)].delegate;
 
             // We found a loop in the delegation, not allowed.
             require(to != msg.sender, "Found loop in delegation.");
         }
-
-        Voter storage delegate_ = voters[to];
+        bool voterExists = checkVoterExists(to);
+        if (!voterExists) {
+            initializeVoter(to);
+        }
+        Voter storage delegate_ = voters[getVoterByAddress(to)];
 
         // Voters cannot delegate to accounts that cannot vote.
         require(delegate_.weight >= 1);
@@ -114,10 +118,11 @@ contract Ballot {
         sender.voted = true;
         sender.delegate = to;
 
-        if (delegate_.voted) {
+        if (voters[getVoterByAddress(to)].voted) {
             // If the delegate already voted,
             // directly add to the number of votes
-            proposals[delegate_.vote].voteCount += sender.weight;
+            proposals[voters[getVoterByAddress(to)].vote].voteCount += sender
+                .weight;
         } else {
             // If the delegate did not vote yet,
             // add to her weight.
@@ -128,12 +133,13 @@ contract Ballot {
     /// Give your vote (including votes delegated to you)
     /// to proposal `proposals[proposal].name`.
     function vote(uint proposal) public {
-        emit Log("tring to vote");
-        Voter storage sender = voters[msg.sender];
+        emit Log("Trying to vote");
+        uint voterIndex = getVoterByAddress(msg.sender);
+        Voter storage sender = voters[voterIndex];
         require(sender.weight != 0, "Has no right to vote");
         require(!sender.voted, "Already voted.");
-        sender.voted = true;
-        sender.vote = proposal;
+        sender.voted = bool(true);
+        sender.vote = uint(proposal);
 
         // If `proposal` is out of the range of the array,
         // this will throw automatically and revert all
@@ -177,6 +183,40 @@ contract Ballot {
     }
 
     function hasVoted(address user) public view returns (bool) {
-        return voters[user].voted;
+        return voters[getVoterByAddress(user)].voted;
+    }
+
+    function initializeVoter(address user) public {
+        voters.push(
+            Voter({
+                userAddress: user,
+                weight: 1,
+                voted: false,
+                delegate: address(0),
+                vote: 0
+            })
+        );
+    }
+
+    function getVoterByAddress(
+        address _address
+    ) public view returns (uint index) {
+        for (uint i = 0; i < voters.length; i++) {
+            if (_address == voters[i].userAddress) {
+                return i;
+            }
+            /*if (voters[i].delegate == _address) {
+                return voters[i];
+            }*/
+        }
+    }
+
+    function checkVoterExists(address user) public view returns (bool) {
+        for (uint i = 0; i < voters.length; i++) {
+            if (user == voters[i].userAddress) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -41,7 +41,7 @@
           }
 
             // Set up contract
-            const contractAddress = '0x9aFd699505F9B532D4b1AbCA6afa7892ebf09Ea7'; // Replace with your contract address
+            const contractAddress = '0x13938F742566F1b5109ede5a6259bE8646bBD717'; // Replace with your contract address
             const contractAbi = BallotAbi; // Replace with your contract ABI
             contract = new web3.eth.Contract(contractAbi, contractAddress);
 
@@ -59,11 +59,15 @@
             const userAddress = accounts[0];
             console.log("User Address:", userAddress);
             const hasVoted = await contract.methods.hasVoted(userAddress).call();
+            const voterExists = await contract.methods.checkVoterExists(userAddress).call();
             const userStatus = document.getElementById('userStatus');
-            if (hasVoted) {
+            if (hasVoted && voterExists) {
                 userStatus.textContent = `You have already voted.`;
-            } else {
+            } else if(voterExists && !hasVoted) {
                 userStatus.textContent = 'You can click on one of the proposals to vote for them or wish to delegate your vote';
+            } else if(!voterExists && !hasVoted){
+                userStatus.textContent = 'You can click on one of the proposals to vote for them or wish to delegate your vote';
+                await contract.methods.initializeVoter(userAddress).send({ from: userAddress });
             }
 
             // Populate vote options
