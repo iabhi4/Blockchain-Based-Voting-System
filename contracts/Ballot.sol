@@ -16,6 +16,13 @@ contract Ballot {
         uint vote; // index of the voted proposal
     }
 
+    struct Chairperson {
+        address chairpersonAddress;
+        uint registerationTime;
+        uint votingTime;
+        uint numberOfCandidates;
+    }
+
     // This is a type for a single proposal.
     struct Proposal {
         string name; // short name (up to 32 bytes)
