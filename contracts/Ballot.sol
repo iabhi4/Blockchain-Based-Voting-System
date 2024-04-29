@@ -29,7 +29,7 @@ contract Ballot {
         uint voteCount; // number of accumulated votes
     }
 
-    address public chairperson;
+    Chairperson public chairpersonDetails;
 
     // This declares a state variable that
     // stores a `Voter` struct for each possible address.
@@ -40,11 +40,19 @@ contract Ballot {
 
     /// Create a new ballot to choose one of `proposalNames`.
     constructor(
-        string[] memory proposalNames,
+        uint registerationTime,
+        uint votingTime,
+        uint numberOfCandidates,
         address userProfileContractAddress
     ) {
-        emit Log("Starting to deploy contract");
-        chairperson = msg.sender;
+        chairpersonDetails = Chairperson({
+            chairpersonAddress: msg.sender,
+            registerationTime: registerationTime,
+            votingTime: votingTime,
+            numberOfCandidates: numberOfCandidates
+        });
+
+        /*chairperson = msg.sender;
         voters.push(
             Voter({
                 userAddress: msg.sender,
@@ -53,7 +61,7 @@ contract Ballot {
                 delegate: address(0),
                 vote: 0
             })
-        );
+        );*/
 
         // Set the address of the UserProfile contract
         userProfile = UserProfile(userProfileContractAddress);
@@ -61,14 +69,15 @@ contract Ballot {
         // For each of the provided proposal names,
         // create a new proposal object and add it
         // to the end of the array.
-        for (uint i = 0; i < proposalNames.length; i++) {
+        /*for (uint i = 0; i < proposalNames.length; i++) {
             // `Proposal({...})` creates a temporary
             // Proposal object and `proposals.push(...)`
             // appends it to the end of `proposals`.
             proposals.push(
                 Proposal({name: string(proposalNames[i]), voteCount: 0})
             );
-        }
+        }*/
+        emit Log("Starting to deploy contract");
     }
 
     UserProfile public userProfile;

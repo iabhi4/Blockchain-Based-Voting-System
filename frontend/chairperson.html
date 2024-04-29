@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ballot Chairperson UI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@truffle/contract/dist/truffle-contract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Ballot Chairperson</h1>
+    
+    <div>
+        <label for="registerationTime">Registration Time:</label>
+        <input type="number" id="registerationTime" placeholder="Enter time">
+        <select id="registerationTimeFormat">
+            <option value="days">Days</option>
+            <option value="hours">Hours</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="votingTime">Voting Time:</label>
+        <input type="number" id="votingTime" placeholder="Enter time">
+        <select id="votingTimeFormat">
+            <option value="days">Days</option>
+            <option value="hours">Hours</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="maxCandidates">Maximum Candidates/Proposals:</label>
+        <input type="number" id="maxCandidates" placeholder="Enter max candidates">
+    </div>
+
+    <div id="contractModal" style="display: none;">
+        <div id="contractContent">
+            <h2>Contracts Deployed</h2>
+            <p id="userProfileAddress"></p>
+            <p id="ballotAddress"></p>
+        </div>
+    </div>
+
+    <button onclick="deployContracts()" id="deployButton">Deploy Contracts</button>
+    <script src="Ballot.js"></script>
+    <script src="UserProfile.js"></script>
+    <script>
+        /*const web3 = new Web3('http://127.0.0.1:7545');
+        function deployContracts() {
+            const registerationTime = document.getElementById('registerationTime').value;
+            const registerationTimeFormat = document.getElementById('registerationTimeFormat').value;
+            const votingTime = document.getElementById('votingTime').value;
+            const votingTimeFormat = document.getElementById('votingTimeFormat').value;
+            const maxCandidates = document.getElementById('maxCandidates').value;
+
+            // Call migration script with these values
+            initializeBallot(registerationTime, registerationTimeFormat, votingTime, votingTimeFormat, maxCandidates);
+        }*/
+
+        const ballotABI = ballotJson.abi;
+        const ballotBytecode = ballotJson.bytecode;
+
+        const userProfileABI = userProfileJson.abi;
+        const userProfileBytecode = userProfileJson.bytecode;
+
+        async function deployContracts() {
+            let registerationTime = document.getElementById('registerationTime').value;
+            const registerationTimeFormat = document.getElementById('registerationTimeFormat').value;
+            let votingTime = document.getElementById('votingTime').value;
+            const votingTimeFormat = document.getElementById('votingTimeFormat').value;
+            const maxCandidates = document.getElementById('maxCandidates').value;
+            if(registerationTimeFormat == 'hours') {
+                registerationTime = registerationTime * 60 * 60;
+            } else {
+                registerationTime = registerationTime * 60 * 60 * 24;
+            }
+
+            if(votingTimeFormat == 'hours') {
+                votingTime = votingTime * 60 * 60;
+            } else {
+                votingTime = votingTime * 60 * 60 * 24;
+            }
+
+            // Initialize Web3 with Ganache provider
+            const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
+
+            // Get the accounts
+            const accounts = await web3.eth.getAccounts();
+            const chairperson = accounts[0];
+
+            // Initialize Truffle contract objects
+            const ballotContract = new web3.eth.Contract(ballotABI);
+            const userProfileContract = new web3.eth.Contract(userProfileABI);
+
+            const userProfileDeployer = userProfileContract.deploy({data: userProfileBytecode});
+
+            const userProfileGasPrice = await userProfileDeployer.estimateGas({from: chairperson});
+
+            // Deploy UserProfile contract
+            const userProfileInstance = await userProfileDeployer.send({ from: chairperson, gas: userProfileGasPrice });
+
+            // Deploy Ballot contract and pass the address of the UserProfile contract
+            const ballotDeployer =  ballotContract.deploy({
+                data: ballotBytecode,
+                arguments: [registerationTime, votingTime, maxCandidates, userProfileInstance.options.address]
+            });
+
+            const ballotGasPrice = await ballotDeployer.estimateGas({from: chairperson});
+
+            const ballotInstance = await ballotDeployer.send({ from: chairperson, gas: ballotGasPrice });
+
+            console.log('Contracts deployed:');
+            console.log('UserProfile:', userProfileInstance.options.address);
+            console.log('Ballot:', ballotInstance.options.address);
+
+
+            localStorage.setItem('userProfileAddress', userProfileInstance.options.address);
+            localStorage.setItem('ballotAddress', ballotInstance.options.address);
+
+            // Disable input fields and deploy button
+            document.getElementById('registerationTime').disabled = true;
+            document.getElementById('registerationTimeFormat').disabled = true;
+            document.getElementById('votingTime').disabled = true;
+            document.getElementById('votingTimeFormat').disabled = true;
+            document.getElementById('maxCandidates').disabled = true;
+            document.getElementById('deployButton').disabled = true;
+
+            // Show contract addresses
+            document.getElementById('userProfileAddress').textContent = 'UserProfile: ' + userProfileInstance.options.address;
+            document.getElementById('ballotAddress').textContent = 'Ballot: ' + ballotInstance.options.address;
+            document.getElementById('contractModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('contractModal').style.display = 'none';
+        }
+
+        window.onload = function() {
+            const userProfileAddress = localStorage.getItem('userProfileAddress');
+            const ballotAddress = localStorage.getItem('ballotAddress');
+
+            if (userProfileAddress && ballotAddress) {
+                // Contracts are already deployed, disable input fields and show contract addresses
+                document.getElementById('registerationTime').disabled = true;
+                document.getElementById('registerationTimeFormat').disabled = true;
+                document.getElementById('votingTime').disabled = true;
+                document.getElementById('votingTimeFormat').disabled = true;
+                document.getElementById('maxCandidates').disabled = true;
+                document.getElementById('deployButton').disabled = true;
+
+                document.getElementById('userProfileAddress').textContent = 'UserProfile: ' + userProfileAddress;
+                document.getElementById('ballotAddress').textContent = 'Ballot: ' + ballotAddress;
+                document.getElementById('contractModal').style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

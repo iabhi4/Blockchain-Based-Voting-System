@@ -1,4 +1,4 @@
-var userProfileJson = {
+{
   "contractName": "UserProfile",
   "abi": [
     {
