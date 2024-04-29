@@ -1,100 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ballot UI</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Ballot</h1>
     <h2>Proposals</h2>
     <ul id="proposalsList">
-        <!-- Populate this list dynamically with proposals -->
+      <!-- Populate this list dynamically with proposals -->
     </ul>
-    
+
     <h2>Delegate Vote</h2>
-    <input type="text" id="delegateAddress" placeholder="Enter delegate address">
+    <input
+      type="text"
+      id="delegateAddress"
+      placeholder="Enter delegate address" />
     <button onclick="delegateVote()">Delegate</button>
 
     <h2>Vote</h2>
     <div id="voteOptions">
-        <!-- Populate this section dynamically with vote options -->
+      <!-- Populate this section dynamically with vote options -->
     </div>
 
     <h2>User Status</h2>
     <p id="userStatus"></p>
 
+    <h2>Real time Voting Counts</h2>
+    <ul id="realTimeAnalytics">
+      <!-- Proposals and their vote counts will be dynamically populated here -->
+    </ul>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
     <script src="Ballot.js"></script>
     <script>
-        let contract;
-        window.addEventListener('load', async () => {
-          // Initialize web3
-          if (window.ethereum) {
-            window.web3 = new Web3(ethereum);
-            await ethereum.enable();
-          } else if (window.web3) {
-            window.web3 = new Web3(web3.currentProvider);
-          } else {
-            console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
-            return;
-          }
+      let contract;
+      window.addEventListener('load', async () => {
+        // Initialize web3
+        if (window.ethereum) {
+          window.web3 = new Web3(ethereum);
+          await ethereum.enable();
+        } else if (window.web3) {
+          window.web3 = new Web3(web3.currentProvider);
+        } else {
+          console.log(
+            'Non-Ethereum browser detected. You should consider trying MetaMask!'
+          );
+          return;
+        }
 
-            // Set up contract
-            const contractAddress = '0x13938F742566F1b5109ede5a6259bE8646bBD717'; // Replace with your contract address
-            const contractAbi = BallotAbi; // Replace with your contract ABI
-            contract = new web3.eth.Contract(contractAbi, contractAddress);
+        // Set up contract
+        const contractAddress = '0xF0FD48A338C586E887eE40902CA3E9aed62fE65d'; // Replace with your contract address
+        const contractAbi = BallotAbi; // Replace with your contract ABI
+        contract = new web3.eth.Contract(contractAbi, contractAddress);
 
-            // Get proposals and populate list
-            const proposals = await contract.methods.getProposals().call();
-            const proposalsList = document.getElementById('proposalsList');
-            proposals.forEach((proposal, index) => {
-                const li = document.createElement('li');
-                li.textContent = `${index + 1}. ${proposal}`;
-                proposalsList.appendChild(li);
-            });
-
-            // Check user status
-            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-            const userAddress = accounts[0];
-            console.log("User Address:", userAddress);
-            const hasVoted = await contract.methods.hasVoted(userAddress).call();
-            const voterExists = await contract.methods.checkVoterExists(userAddress).call();
-            const userStatus = document.getElementById('userStatus');
-            if (hasVoted && voterExists) {
-                userStatus.textContent = `You have already voted.`;
-            } else if(voterExists && !hasVoted) {
-                userStatus.textContent = 'You can click on one of the proposals to vote for them or wish to delegate your vote';
-            } else if(!voterExists && !hasVoted){
-                userStatus.textContent = 'You can click on one of the proposals to vote for them or wish to delegate your vote';
-                await contract.methods.initializeVoter(userAddress).send({ from: userAddress });
-            }
-
-            // Populate vote options
-            const voteOptions = document.getElementById('voteOptions');
-            proposals.forEach((proposal, index) => {
-                const button = document.createElement('button');
-                button.textContent = `Vote for ${proposal}`;
-                button.onclick = () => vote(index);
-                voteOptions.appendChild(button);
-            });
+        // Get proposals and populate list
+        const proposals = await contract.methods.getProposals().call();
+        const proposalsList = document.getElementById('proposalsList');
+        proposals.forEach((proposal, index) => {
+          const li = document.createElement('li');
+          li.textContent = `${index + 1}. ${proposal}`;
+          proposalsList.appendChild(li);
         });
 
-        async function delegateVote() {
-            const delegateAddress = document.getElementById('delegateAddress').value;
-            const accounts = await web3.eth.getAccounts(); // Get the accounts from MetaMask
-            const senderAddress = accounts[0]; // Use the first account as the sender address
+        async function updateVoteCounts() {
+          const proposalsList = document.getElementById('realTimeAnalytics');
+          proposalsList.innerHTML = ''; // Clear the existing list to repopulate
 
-            await contract.methods.delegate(delegateAddress).send({ from: senderAddress }); // Pass sender address as "from" option
-            location.reload(); // Refresh page
+          const proposalNames = await contract.methods.getProposals().call();
+          for (let i = 0; i < proposalNames.length; i++) {
+            const proposalDetails = await contract.methods
+              .getProposalDetails(i)
+              .call();
+            const li = document.createElement('li');
+            li.textContent = `${proposalDetails[0]} - Votes: ${proposalDetails[1]}`; // proposalDetails[0] is name, proposalDetails[1] is vote count
+            proposalsList.appendChild(li);
+          }
         }
 
-        async function vote(proposalIndex) {
-            const accounts = await web3.eth.getAccounts(); // Get the accounts from MetaMask
-            const senderAddress = accounts[0]; // Use the first account as the sender address
-            await contract.methods.vote(proposalIndex).send({ from: senderAddress }); // Pass sender address as "from" option
-            location.reload(); // Refresh page
+        // Call this function to initially populate and periodically update data
+        updateVoteCounts();
+        setInterval(updateVoteCounts, 10000);
+
+        // Check user status
+        const accounts = await ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        const userAddress = accounts[0];
+        console.log('User Address:', userAddress);
+        const hasVoted = await contract.methods.hasVoted(userAddress).call();
+        const voterExists = await contract.methods
+          .checkVoterExists(userAddress)
+          .call();
+        const userStatus = document.getElementById('userStatus');
+        if (hasVoted && voterExists) {
+          userStatus.textContent = `You have already voted.`;
+        } else if (voterExists && !hasVoted) {
+          userStatus.textContent =
+            'You can click on one of the proposals to vote for them or wish to delegate your vote';
+        } else if (!voterExists && !hasVoted) {
+          userStatus.textContent =
+            'You can click on one of the proposals to vote for them or wish to delegate your vote';
+          await contract.methods
+            .initializeVoter(userAddress)
+            .send({ from: userAddress });
         }
+
+        // Populate vote options
+        const voteOptions = document.getElementById('voteOptions');
+        proposals.forEach((proposal, index) => {
+          const button = document.createElement('button');
+          button.textContent = `Vote for ${proposal}`;
+          button.onclick = () => vote(index);
+          voteOptions.appendChild(button);
+        });
+      });
+
+      async function delegateVote() {
+        const delegateAddress =
+          document.getElementById('delegateAddress').value;
+        const accounts = await web3.eth.getAccounts(); // Get the accounts from MetaMask
+        const senderAddress = accounts[0]; // Use the first account as the sender address
+
+        await contract.methods
+          .delegate(delegateAddress)
+          .send({ from: senderAddress }); // Pass sender address as "from" option
+        location.reload(); // Refresh page
+      }
+
+      async function vote(proposalIndex) {
+        const accounts = await web3.eth.getAccounts(); // Get the accounts from MetaMask
+        const senderAddress = accounts[0]; // Use the first account as the sender address
+        await contract.methods
+          .vote(proposalIndex)
+          .send({ from: senderAddress }); // Pass sender address as "from" option
+        location.reload(); // Refresh page
+      }
     </script>
-</body>
+  </body>
 </html>

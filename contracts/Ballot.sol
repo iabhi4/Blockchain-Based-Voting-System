@@ -219,4 +219,10 @@ contract Ballot {
         }
         return false;
     }
+
+    function getProposalDetails(uint proposalIndex) public view returns (string memory, uint) {
+    Proposal memory proposal = proposals[proposalIndex];
+    return (proposal.name, proposal.voteCount);
+    }
+
 }
