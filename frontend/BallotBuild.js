@@ -1,4 +1,4 @@
-{
+var ballotJson = {
   "contractName": "Ballot",
   "abi": [
     {
@@ -25785,4 +25785,4 @@
     },
     "version": 1
   }
-}
+};

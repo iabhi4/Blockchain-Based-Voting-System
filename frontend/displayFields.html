@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Storage Viewer</title>
+</head>
+<body>
+    <h1>Contract Storage Viewer</h1>
+
+    <div id="userProfileStorage">
+        <h2>User Profile Contract Storage</h2>
+        <div id="userProfileFields">
+            <!-- Fields and values will be displayed here -->
+        </div>
+    </div>
+
+    <hr> <!-- Separate the contract storages with a big line -->
+
+    <div id="ballotStorage">
+        <h2>Ballot Contract Storage</h2>
+        <div id="ballotFields">
+            <!-- Fields and values will be displayed here -->
+        </div>
+    </div>
+    <script src="UserProfileBuild.js"></script>
+    <script src="BallotBuild.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script>
+        // Load the contract addresses from localStorage
+        const userProfileAddress = localStorage.getItem('userProfileAddress');
+        const ballotAddress = localStorage.getItem('ballotAddress');
+
+        // Initialize Web3 with your provider (e.g., Infura)
+        const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'));
+
+        // Load the contracts
+        const userProfileContract = new web3.eth.Contract(userProfileJson.abi, userProfileAddress);
+        const ballotContract = new web3.eth.Contract(ballotJson.abi, ballotAddress);
+
+        // Function to display storage data for UserProfile contract
+        async function displayUserProfileStorage() {
+            const userProfileFields = document.getElementById("userProfileFields");
+            const profilesCount = await userProfileContract.methods.profilesCount().call();
+            const registerationTime = await userProfileContract.methods.getRegistrationTimePeriod().call();
+            const maxCandidates = await userProfileContract.methods.getMaxCandidatesAllowed().call();
+            const currentCandidates = await userProfileContract.methods.getCurrentCandidateCount().call();
+            const userProfileDiv = document.createElement("div");
+            userProfileDiv.innerHTML = `<p><strong>Registration Time:</strong> ${registerationTime}</p>
+                                        <p><strong>Max candidates:</strong> ${maxCandidates}</p>
+                                        <p><strong>Current Candidate:</strong> ${currentCandidates}</p>`;
+            userProfileFields.appendChild(userProfileDiv);
+
+            for (let i = 0; i < profilesCount; i++) {
+                const profile = await userProfileContract.methods.getProfile(i).call();
+                const profileDiv = document.createElement("div");
+                profileDiv.innerHTML = `<p><strong>User Address:</strong> ${profile.userAddress}</p>
+                                        <p><strong>Name:</strong> ${profile.name}</p>
+                                        <p><strong>Age:</strong> ${profile.age}</p>
+                                        <p><strong>Document Number:</strong> ${profile.documentNumber}</p>
+                                        <p><strong>Residence:</strong> ${profile.residence}</p>
+                                        <p><strong>Eligible to Vote:</strong> ${profile.eligibleToVote ? "Yes" : "No"}</p>
+                                        <p><strong>Is Candidate:</strong> ${profile.isCandidate ? "Yes" : "No"}</p>
+                                        <p><strong>Proposal Name:</strong> ${profile.proposal}</p>
+                                        <p>---------------------------</p>`;
+                userProfileFields.appendChild(profileDiv);
+            }
+        }
+
+        // Function to display storage data for Ballot contract
+        async function displayBallotStorage() {
+            const ballotFields = document.getElementById("ballotFields");
+            const chairpersonDetails = await ballotContract.methods.getChairpersonDetails().call();
+            const votersCount = await ballotContract.methods.votersCount().call();
+            const proposalsCount = await ballotContract.methods.proposalsCount().call();
+
+            const chairpersonDiv = document.createElement("div");
+            chairpersonDiv.innerHTML = `<p><strong>Chairperson Address:</strong> ${chairpersonDetails.chairpersonAddress}</p>
+                                        <p><strong>Voting Time:</strong> ${chairpersonDetails.votingTime}</p>
+                                        <p><strong>Registeration Time:</strong> ${chairpersonDetails.registrationTime}</p>
+                                        <p><strong>Number of Candidates:</strong> ${chairpersonDetails.numberOfCandidates}</p>`;
+            ballotFields.appendChild(chairpersonDiv);
+
+            for (let i = 0; i < votersCount; i++) {
+                const voter = await ballotContract.methods.getVoter(i).call();
+                const voterDiv = document.createElement("div");
+                voterDiv.innerHTML = `<p><strong>User Address:</strong> ${voter.userAddress}</p>
+                                      <p><strong>Weight:</strong> ${voter.weight}</p>
+                                      <p><strong>Voted:</strong> ${voter.voted ? "Yes" : "No"}</p>
+                                      <p><strong>Delegate:</strong> ${voter.delegate}</p>
+                                      <p><strong>Vote:</strong> ${voter.vote}</p>`;
+                ballotFields.appendChild(voterDiv);
+            }
+
+            for (let i = 0; i < proposalsCount; i++) {
+                const proposal = await ballotContract.methods.getProposal(i).call();
+                const proposalDiv = document.createElement("div");
+                proposalDiv.innerHTML = `<p><strong>Name:</strong> ${proposal.name}</p>
+                                          <p><strong>Vote Count:</strong> ${proposal.voteCount}</p>`;
+                ballotFields.appendChild(proposalDiv);
+            }
+        }
+
+        // Call the functions to display contract storage data
+        displayUserProfileStorage();
+        displayBallotStorage();
+    </script>
+</body>
+</html>

@@ -18,7 +18,7 @@ contract Ballot {
 
     struct Chairperson {
         address chairpersonAddress;
-        uint registerationTime;
+        uint registrationTime;
         uint votingTime;
         uint numberOfCandidates;
     }
@@ -38,20 +38,25 @@ contract Ballot {
     // A dynamically-sized array of `Proposal` structs.
     Proposal[] public proposals;
 
+    bool public proposalsFetched;
+
+    address public ballotContractAddress;
+
     /// Create a new ballot to choose one of `proposalNames`.
     constructor(
-        uint registerationTime,
+        uint registrationTime,
         uint votingTime,
         uint numberOfCandidates,
         address userProfileContractAddress
     ) {
         chairpersonDetails = Chairperson({
             chairpersonAddress: msg.sender,
-            registerationTime: registerationTime,
+            registrationTime: registrationTime,
             votingTime: votingTime,
             numberOfCandidates: numberOfCandidates
         });
 
+        ballotContractAddress = address(this);
         /*chairperson = msg.sender;
         voters.push(
             Voter({
@@ -182,12 +187,14 @@ contract Ballot {
         winnerName_ = proposals[winningProposal()].name;
     }
 
-    function checkEligibilityToVote() external view returns (bool) {
+    function checkEligibilityToVote(
+        address userAddress
+    ) public view returns (bool) {
         require(
             address(userProfile) != address(0),
             "UserProfile contract address not set"
         );
-        return userProfile.isEligibleToVote(msg.sender);
+        return userProfile.checkUserExists(userAddress);
     }
 
     function getProposals() public view returns (string[] memory) {
@@ -199,7 +206,8 @@ contract Ballot {
     }
 
     function hasVoted(address user) public view returns (bool) {
-        return voters[getVoterByAddress(user)].voted;
+        uint voterIndex = getVoterByAddress(user);
+        return voters[voterIndex].voted;
     }
 
     function initializeVoter(address user) public {
@@ -212,6 +220,17 @@ contract Ballot {
                 vote: 0
             })
         );
+    }
+
+    function fetchProposals() public {
+        string[] memory proposalNames = userProfile.getProposals();
+        for (uint i = 0; i < proposalNames.length; i++) {
+            Proposal memory newProposal = Proposal({
+                name: proposalNames[i],
+                voteCount: 0
+            });
+            proposals.push(newProposal);
+        }
     }
 
     function getVoterByAddress(
@@ -234,5 +253,45 @@ contract Ballot {
             }
         }
         return false;
+    }
+
+    function getChairpersonDetails() public view returns (Chairperson memory) {
+        return chairpersonDetails;
+    }
+
+    function votersCount() public view returns (uint) {
+        return voters.length;
+    }
+
+    function proposalsCount() public view returns (uint) {
+        return proposals.length;
+    }
+
+    function getVoter(uint i) public view returns (Voter memory) {
+        return voters[i];
+    }
+
+    function getProposal(uint i) public view returns (Proposal memory) {
+        return proposals[i];
+    }
+
+    function getVotingTime() public view returns (uint) {
+        return chairpersonDetails.votingTime;
+    }
+
+    function getRegistrationTime() public view returns (uint) {
+        return chairpersonDetails.registrationTime;
+    }
+
+    function getNumberOfCandidates() public view returns (uint) {
+        return chairpersonDetails.numberOfCandidates;
+    }
+
+    function getContractAddress() public view returns (address) {
+        return ballotContractAddress;
+    }
+
+    function isProposalFetched() public view returns (bool) {
+        return proposalsFetched;
     }
 }

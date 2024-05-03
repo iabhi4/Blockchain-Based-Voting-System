@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+import "./Ballot.sol";
 
 contract UserProfile {
     struct Profile {
@@ -7,10 +8,25 @@ contract UserProfile {
         uint256 age;
         string documentNumber;
         string residence;
-        bool eligibleToVote; // New parameter
+        bool eligibleToVote;
+        bool isCandidate;
+        string proposal; // Added proposal variable
     }
 
     Profile[] public profiles;
+
+    uint public registrationTimePeriod;
+
+    uint public maxCandidatesAllowed;
+
+    int public currentCandidateCount = 0;
+
+    string[] public proposalsList;
+
+    constructor(uint registrationTime, uint maxCandidates) {
+        registrationTimePeriod = registrationTime;
+        maxCandidatesAllowed = maxCandidates;
+    }
 
     event ProfileRegistered(
         address indexed userAddress,
@@ -18,7 +34,9 @@ contract UserProfile {
         uint256 age,
         string documentNumber,
         string residence,
-        bool eligibleToVote
+        bool eligibleToVote,
+        bool isCandidate,
+        string proposal
     );
 
     // Function to register a user profile
@@ -26,16 +44,27 @@ contract UserProfile {
         string memory _name,
         uint256 _age,
         string memory _documentNumber,
-        string memory _residence
+        string memory _residence,
+        bool _isCandidate,
+        string memory _proposal // Added proposal parameter
     ) public {
         // Register user profile
+        if (
+            _isCandidate &&
+            int(currentCandidateCount) < int(maxCandidatesAllowed)
+        ) {
+            proposalsList.push(_proposal);
+            currentCandidateCount++;
+        }
         Profile memory newProfile = Profile(
             msg.sender,
             _name,
             _age,
             _documentNumber,
             _residence,
-            false
+            false,
+            _isCandidate,
+            _proposal // Set proposal value
         );
         profiles.push(newProfile);
 
@@ -46,9 +75,10 @@ contract UserProfile {
             _age,
             _documentNumber,
             _residence,
-            false
+            false,
+            _isCandidate,
+            _proposal // Emit proposal value
         );
-        //isEligibleToVote(msg.sender);
     }
 
     function isEligibleToVote(
@@ -57,17 +87,36 @@ contract UserProfile {
         return true;
     }
 
-    // Function to check if a user is eligible to vote
-    /*function isEligibleToVote(address userAddress) external returns (bool) {
-        // Implement logic to check government ID through API
-        // If government ID is valid, set eligibleToVote to true
-        // For now, let's assume the eligibility check is successful
-        for (uint256 i = 0; i < profiles.length; i++) {
+    function profilesCount() public view returns (uint256) {
+        return profiles.length;
+    }
+
+    function getProfile(uint i) public view returns (Profile memory) {
+        return profiles[i];
+    }
+
+    function checkUserExists(address userAddress) public view returns (bool) {
+        for (uint i = 0; i < profiles.length; i++) {
             if (profiles[i].userAddress == userAddress) {
-                profiles[i].eligibleToVote = true;
                 return true;
             }
         }
         return false;
-    }*/
+    }
+
+    function getProposals() public view returns (string[] memory) {
+        return proposalsList;
+    }
+
+    function getRegistrationTimePeriod() public view returns (uint) {
+        return registrationTimePeriod;
+    }
+
+    function getMaxCandidatesAllowed() public view returns (uint) {
+        return maxCandidatesAllowed;
+    }
+
+    function getCurrentCandidateCount() public view returns (int) {
+        return currentCandidateCount;
+    }
 }

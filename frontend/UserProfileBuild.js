@@ -1,4 +1,4 @@
-{
+var userProfileJson = {
   "contractName": "UserProfile",
   "abi": [
     {
@@ -15673,4 +15673,4 @@
     "methods": {},
     "version": 1
   }
-}
+};
