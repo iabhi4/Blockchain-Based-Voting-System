@@ -1,10 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
+// src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';  // Ensure your CSS file is correctly linked
+import App from './App';
+import { AppProvider } from './context/AppContext';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.render(
   <React.StrictMode>
-    <App />
+   
+      <App />
+  
   </React.StrictMode>,
-)
+  document.getElementById('root')
+);
+
+
+// ReactDOM.render(
+//   <React.StrictMode>
+//     //<AppProvider>
+//       <App />
+//    // </AppProvider>
+//   </React.StrictMode>,
+//   document.getElementById('root')
+// );
