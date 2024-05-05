@@ -117,13 +117,14 @@ const DisplayFields = () => {
               <strong>Voting Time:</strong>{' '}
               {new Date(
                 Number(ballotData.chairpersonDetails.votingTime) * 1000
-              ).toUTCString()}
+              ).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}
             </p>
             <p>
               <strong>Registration Time:</strong>{' '}
               {new Date(
                 Number(ballotData.chairpersonDetails.registrationTime) * 1000
-              ).toUTCString()}
+              ).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}
+              ;
             </p>
             <p>
               <strong>Number of Candidates:</strong>{' '}
