@@ -223,6 +223,8 @@ contract Ballot {
     }
 
     function fetchProposals() public {
+    // Check if proposals have already been fetched
+    if (proposals.length == 0) {
         string[] memory proposalNames = userProfile.getProposals();
         for (uint i = 0; i < proposalNames.length; i++) {
             Proposal memory newProposal = Proposal({
@@ -232,6 +234,7 @@ contract Ballot {
             proposals.push(newProposal);
         }
     }
+}
 
     function getVoterByAddress(
         address _address

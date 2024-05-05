@@ -42,7 +42,7 @@ const UserProfile = () => {
               'Registration Time is closed. Go to Ballot to vote for your favorite proposal.'
             );
           } else {
-            setRegistrationEndTime(new Date(registrationTime * 1000));
+            setRegistrationEndTime(new Date(Number(registrationTime) * 1000));
           }
         } catch (error) {
           console.error('Could not connect to wallet', error);
