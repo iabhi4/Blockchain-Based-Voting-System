@@ -4,14 +4,19 @@ import ballotJson from '../../../build/contracts/Ballot.json';
 
 const Ballot = () => {
   const [contract, setContract] = useState(null);
-  const [proposals, setProposals] = useState([]);
+  const [proposals, setProposals] = useState(
+    JSON.parse(localStorage.getItem('proposals')) || []
+  );
   const [delegateAddress, setDelegateAddress] = useState('');
   const [userStatus, setUserStatus] = useState('Loading...');
+  const [votingStatus, setVotingStatus] = useState('');
   const [isBallotActive, setIsBallotActive] = useState(false);
+  const [disable, setDisable] = useState(false);
   const [proposalsChecked, setProposalsChecked] = useState(false);
 
   useEffect(() => {
     const loadBlockchainData = async () => {
+      console.log('LoadDataRunning');
       if (window.ethereum) {
         const web3 = new Web3(window.ethereum);
         await window.ethereum.enable();
@@ -43,6 +48,10 @@ const Ballot = () => {
             : 'Click on one of the proposals to vote for them or you can also wish to delegate to someone else.'
         );
 
+        if (hasVoted) {
+          setDisable(true);
+        }
+
         const currentTime = new Date();
         const registrationTime = new Date(
           Number(await loadedContract.methods.getRegistrationTime().call()) *
@@ -55,10 +64,10 @@ const Ballot = () => {
         setIsBallotActive(
           currentTime >= registrationTime && currentTime < votingTime
         );
-        setUserStatus(
+        setVotingStatus(
           currentTime >= votingTime
             ? 'Voting has ended.'
-            : 'Voting will start after the Registration Period.'
+            : 'Voting is in Progress'
         );
 
         if (!proposalsChecked) {
@@ -70,19 +79,18 @@ const Ballot = () => {
     };
 
     loadBlockchainData();
-  }, [proposalsChecked]);
+  }, [proposalsChecked, userStatus]);
 
   const fetchProposals = async (contract, userAddress) => {
     try {
-      await contract.methods
-        .fetchProposals()
-        .send({ from: userAddress, gas: '5000000' });
       const fetchedProposals = await contract.methods.getProposals().call();
       if (fetchedProposals.length === 0 && !proposalsChecked) {
-        // Schedule another check in 10 seconds if proposals are still not available
-        setTimeout(() => fetchProposals(contract, userAddress), 10000);
+        await contract.methods
+          .fetchProposals()
+          .send({ from: userAddress, gas: '5000000' });
       } else {
         setProposals(fetchedProposals);
+        localStorage.setItem('proposals', JSON.stringify(fetchedProposals));
         setProposalsChecked(true); // Ensure we don't refetch unnecessarily
       }
     } catch (error) {
@@ -113,7 +121,15 @@ const Ballot = () => {
   };
 
   const handleVote = async (index) => {
-    const accounts = await window.web3.eth.getAccounts();
+    if (!window.ethereum) {
+      console.log(
+        'Ethereum object not found, you should consider using MetaMask!'
+      );
+      return;
+    }
+
+    const web3 = new Web3(window.ethereum);
+    const accounts = await web3.eth.getAccounts();
     try {
       await contract.methods.vote(index).send({ from: accounts[0] });
       setUserStatus(`You voted for proposal ${index + 1}.`);
@@ -140,12 +156,12 @@ const Ballot = () => {
           value={delegateAddress}
           onChange={(e) => setDelegateAddress(e.target.value)}
           placeholder='Enter delegate address'
-          disabled={!isBallotActive}
+          disabled={!isBallotActive || disable}
           className='w-full px-3 py-2 mb-2 rounded border'
         />
         <button
           onClick={handleDelegateVote}
-          disabled={!isBallotActive}
+          disabled={!isBallotActive || disable}
           className='px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50'>
           Delegate
         </button>
@@ -157,7 +173,7 @@ const Ballot = () => {
             <button
               key={index}
               onClick={() => handleVote(index)}
-              disabled={!isBallotActive}
+              disabled={!isBallotActive || disable}
               className='px-4 py-2 mr-2 mb-2 bg-green-500 text-white rounded disabled:opacity-50'>
               Vote for {proposal}
             </button>
@@ -166,7 +182,9 @@ const Ballot = () => {
       </div>
       <div>
         <h2 className='text-lg font-semibold mb-2'>User Status</h2>
-        <p>{userStatus}</p>
+        {!isBallotActive ? <p> </p> : <p>{userStatus}</p>}
+
+        <p>{votingStatus}</p>
       </div>
     </div>
   );

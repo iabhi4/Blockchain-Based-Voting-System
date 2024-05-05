@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import ballotJson from '../../../build/contracts/Ballot.json';
 import userProfileJson from '../../../build/contracts/UserProfile.json';
+import { useNavigate } from 'react-router-dom';
 
 // Instantiate Web3 with your provider
 // const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'));
 
 function Chairperson() {
+  const navigate = useNavigate();
   const ballotABI = ballotJson.abi;
   const ballotBytecode = ballotJson.bytecode;
 
@@ -115,6 +117,8 @@ function Chairperson() {
     setUserProfileAddress(userProfileDeployed.options.address);
     setBallotAddress(ballotDeployed.options.address);
     setDeploymentDisabled(true);
+
+    navigate('/display-fields');
   };
 
   const convertToSeconds = (time, format) => {

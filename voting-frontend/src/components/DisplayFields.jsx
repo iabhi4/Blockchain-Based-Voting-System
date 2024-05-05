@@ -57,13 +57,22 @@ const DisplayFields = () => {
     const voters = [];
     for (let i = 0; i < votersCount; i++) {
       const voter = await contract.methods.getVoter(i).call();
-      voters.push(voter);
+      voters.push({
+        userAddress: voter.userAddress,
+        weight: voter.weight,
+        voted: voter.voted,
+        delegate: voter.delegate,
+        vote: voter.vote,
+      });
     }
 
     const proposals = [];
     for (let i = 0; i < proposalsCount; i++) {
       const proposal = await contract.methods.getProposal(i).call();
-      proposals.push(proposal);
+      proposals.push({
+        name: proposal.name,
+        voteCount: proposal.voteCount,
+      });
     }
 
     setBallotData({
@@ -90,7 +99,7 @@ const DisplayFields = () => {
             <li key={index} className='my-2 p-2 bg-gray-100 rounded'>
               <div>User Address: {profile.userAddress}</div>
               <div>Name: {profile.name}</div>
-              <div>Age: {profile.age}</div>
+              <div>Age: {Number(profile.age)}</div>
               <div>Document Number: {profile.documentNumber}</div>
               <div>Residence: {profile.residence}</div>
               <div>
@@ -132,6 +141,30 @@ const DisplayFields = () => {
             </p>
           </div>
         )}
+      </div>
+      <div>
+        <h2 className='text-lg font-semibold mt-4'>Voters</h2>
+        {ballotData.voters &&
+          ballotData.voters.map((voter, index) => (
+            <div key={index} className='my-2 p-2 bg-gray-100 rounded'>
+              <p>User Address: {voter.userAddress}</p>
+              <p>Weight: {Number(voter.weight)}</p>
+              <p>Voted: {voter.voted ? 'Yes' : 'No'}</p>
+              <p>Delegate: {voter.delegate}</p>
+              <p>Vote: {Number(voter.vote)}</p>
+            </div>
+          ))}
+
+        <hr className='my-4' />
+
+        <h2 className='text-lg font-semibold mt-4'>Proposals</h2>
+        {ballotData.proposals &&
+          ballotData.proposals.map((proposal, index) => (
+            <div key={index} className='my-2 p-2 bg-gray-100 rounded'>
+              <p>Name: {proposal.name}</p>
+              <p>Vote Count: {Number(proposal.voteCount)}</p>
+            </div>
+          ))}
       </div>
     </div>
   );
