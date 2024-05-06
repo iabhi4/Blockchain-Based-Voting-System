@@ -20,6 +20,7 @@ const Ballot = () => {
     datasets: [
       {
         label: 'Number of Votes',
+        color: 'white',
         data: [], // will hold votes count
         fill: false,
         backgroundColor: 'rgb(75, 192, 192)',
@@ -264,6 +265,9 @@ const Ballot = () => {
               responsive: true,
               plugins: {
                 legend: {
+                  labels: {
+                    color: 'white' // Ensure the dataset label "Number of Votes" is white
+                  },
                   position: 'top',
                 },
                 tooltip: {
@@ -275,20 +279,26 @@ const Ballot = () => {
                 x: {
                   title: {
                     display: true,
-                    text: 'Proposals', // X-axis label
+                    text: 'Proposals',
+                    color: 'white'
                   },
+                  ticks: {
+                    color: 'white'
+                  }
                 },
                 y: {
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: 'Vote Count', // Y-axis label
+                    text: 'Vote Count',
+                    color: 'white'
                   },
                   ticks: {
-                    stepSize: 1, // Ensure ticks at every integer
-                    precision: 0, // No decimal places in the ticks
+                    stepSize: 1,
+                    precision: 0,
+                    color: 'white',
                     callback: function (value) {
-                      if (value % 1 === 0) { // Check if it's an integer
+                      if (value % 1 === 0) {
                         return value;
                       }
                     },
@@ -301,6 +311,7 @@ const Ballot = () => {
       </div>
     </div>
   );
+  
 };
 
 export default Ballot;
