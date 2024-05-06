@@ -58,7 +58,10 @@ const UserProfile = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!userProfileContract || !account) return;
-
+    const hasRegistered = await userProfileContract.methods
+            .checkUserExists(account)
+            .call();
+    if (hasRegistered) return alert('User profile already registered!');
     try {
       await userProfileContract.methods
         .registerUserProfile(
