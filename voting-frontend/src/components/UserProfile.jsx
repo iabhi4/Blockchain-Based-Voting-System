@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import userProfileJson from '../../../build/contracts/UserProfile.json';
+import axios from 'axios';
 
 const UserProfile = () => {
   const [name, setName] = useState('');
@@ -59,14 +60,17 @@ const UserProfile = () => {
     event.preventDefault();
     if (!userProfileContract || !account) return;
     const hasRegistered = await userProfileContract.methods
-            .checkUserExists(account)
-            .call();
+      .checkUserExists(account)
+      .call();
     if (hasRegistered) return alert('User profile already registered!');
     // Verify document number with external API
     try {
-      const verificationResponse = await axios.post('http://localhost:3000/verifyDocument', {
-        documentNumber
-      });
+      const verificationResponse = await axios.post(
+        'http://localhost:4000/verifyDocument',
+        {
+          documentNumber,
+        }
+      );
       if (!verificationResponse.data.verified) {
         return alert('Registration declined: user not found in database.');
       }
