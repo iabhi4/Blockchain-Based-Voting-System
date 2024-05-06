@@ -21,3 +21,40 @@ Enhancements on base
 - Identity verification - only the people who have registered in the registeration period can vote - Done ? (this is done but the code is commented out, I will check this raat me)
 - Fix tie in winningProposal() issue - In Progress
 - Interactive UI in React where every thing is happening- Not started
+
+
+Blockchain Voting System
+Welcome to the blockchain voting system project, a next-gen way to ensure secure and transparent voting, built using Ethereum smart contracts and React. This README is gonna walk you through what this project is all about, how it works, and what you need to get it running on your local machine.
+
+Prerequisite
+Before you dive into the project, make sure you have Ganache up and running. You don't need to worry about linking it to Truffle for this project, just make sure it's active.
+
+Project Flow
+Chairperson Screen
+When you first boot up the project, you'll land on the chairperson screen. This is where the magic starts. Here, the chairperson sets three critical parameters:
+
+Registration Time: The window during which users can register.
+Voting Time: When users can cast their votes.
+Maximum Candidates: The cap on how many candidates can register.
+These parameters get stored in the Ballot contract and partially in the UserProfile contract to manage the UI functionalities once the registration time or candidate quota is met. For example, if it's 12:54 PM and the chairperson sets 2 minutes each for registration and voting, registration is open from 12:54 to 12:56 PM, and voting from 12:56 to 12:58 PM.
+
+User Profile Screen
+Navigate to /userProfile during the registration period. Here, users can register and, if desired, register as candidates to submit their proposals. If the maximum candidates limit is set to 2, only the first two users who register as candidates will be eligible.
+
+Voting and Ballot Contract
+Post-registration, the Ballot contract kicks into action. Access this via the /ballot route. You'll find a 'Fetch Proposals' button that pulls proposals from the UserProfile contract. This initializes the proposals array in the storage so we don't redo transactions needlessly. Once the proposals are set, users can vote. Their user status will update based on their actions. Remember, the button is disabled once the array is initialized to prevent re-fetching.
+
+Post-Voting
+Once voting ends, the Ballot contract locks down, and the system will later display the winner (I'll code this part at home later). Also, this is where you'd plug in the real-time voting analysis module.
+
+Enhancements and Checks
+Here's a checklist and enhancements made:
+
+Contracts deployment from UI: DONE
+New UserProfile contract: DONE
+Candidate registration and proposal submission: DONE
+Real-time voting analysis: DONE
+Chairperson controls (time settings and candidate limits): DONE
+Identity verification: Mostly done (need to uncomment some code tonight)
+Tie in winningProposal(): In Progress
+Interactive UI in React: Not started yet
