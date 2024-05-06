@@ -170,21 +170,61 @@ contract Ballot {
 
     /// @dev Computes the winning proposal taking all
     /// previous votes into account.
-    function winningProposal() public view returns (uint winningProposal_) {
+    function winningProposals() public view returns (uint[] memory) {
         uint winningVoteCount = 0;
+        uint[] memory winningProposals_;
+        uint count = 0;
+
+        // Find the highest number of votes
         for (uint p = 0; p < proposals.length; p++) {
             if (proposals[p].voteCount > winningVoteCount) {
                 winningVoteCount = proposals[p].voteCount;
-                winningProposal_ = p;
             }
         }
+
+        // Count the number of proposals with the highest number of votes
+        for (uint p = 0; p < proposals.length; p++) {
+            if (proposals[p].voteCount == winningVoteCount) {
+                count++;
+            }
+        }
+
+        // Store the indices of winning proposals in the winningProposals_ array
+        winningProposals_ = new uint[](count);
+        count = 0;
+        for (uint p = 0; p < proposals.length; p++) {
+            if (proposals[p].voteCount == winningVoteCount) {
+                winningProposals_[count] = p;
+                count++;
+            }
+        }
+        return winningProposals_;
     }
 
     // Calls winningProposal() function to get the index
     // of the winner contained in the proposals array and then
     // returns the name of the winner
-    function winnerName() external view returns (string memory winnerName_) {
-        winnerName_ = proposals[winningProposal()].name;
+    function winnerName() external view returns (string memory winnerNames_) {
+        uint[] memory winningIndices = winningProposals();
+        if (winningIndices.length == 1) {
+            winnerNames_ = proposals[winningIndices[0]].name;
+        } else {
+            // Construct winner names string with comma separation
+            for (uint i = 0; i < winningIndices.length; i++) {
+                if (i == 0) {
+                    winnerNames_ = proposals[winningIndices[i]].name;
+                } else {
+                    winnerNames_ = string(
+                        abi.encodePacked(
+                            winnerNames_,
+                            ", ",
+                            proposals[winningIndices[i]].name
+                        )
+                    );
+                }
+            }
+        }
+        return winnerNames_;
     }
 
     function checkEligibilityToVote(
@@ -223,18 +263,18 @@ contract Ballot {
     }
 
     function fetchProposals() public {
-    // Check if proposals have already been fetched
-    if (proposals.length == 0) {
-        string[] memory proposalNames = userProfile.getProposals();
-        for (uint i = 0; i < proposalNames.length; i++) {
-            Proposal memory newProposal = Proposal({
-                name: proposalNames[i],
-                voteCount: 0
-            });
-            proposals.push(newProposal);
+        // Check if proposals have already been fetched
+        if (proposals.length == 0) {
+            string[] memory proposalNames = userProfile.getProposals();
+            for (uint i = 0; i < proposalNames.length; i++) {
+                Proposal memory newProposal = Proposal({
+                    name: proposalNames[i],
+                    voteCount: 0
+                });
+                proposals.push(newProposal);
+            }
         }
     }
-}
 
     function getVoterByAddress(
         address _address
