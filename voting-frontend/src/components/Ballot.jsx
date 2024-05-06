@@ -87,8 +87,8 @@ const Ballot = () => {
           currentTime >= registrationTime && currentTime < votingTime
         );
         setVotingStatus(
-          currentTime >= votingTime
-            ? 'Voting has ended.'
+          currentTime > votingTime
+            ? 'Winner: ' + await loadedContract.methods.winnerName().call()
             : 'Voting is in Progress'
         );
 
