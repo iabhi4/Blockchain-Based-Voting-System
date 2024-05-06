@@ -85,86 +85,76 @@ const DisplayFields = () => {
   };
 
   return (
-    <div className='max-w-4xl mx-auto p-4 bg-white rounded-lg shadow-md'>
-      <h1 className='text-2xl font-bold text-center'>
-        Contract Storage Viewer
-      </h1>
-
-      <div>
-        <h2 className='text-lg font-semibold mt-4'>
-          User Profile Contract Storage
-        </h2>
-        <ul>
-          {userProfileData.map((profile, index) => (
-            <li key={index} className='my-2 p-2 bg-gray-100 rounded'>
-              <div>User Address: {profile.userAddress}</div>
-              <div>Name: {profile.name}</div>
-              <div>Age: {Number(profile.age)}</div>
-              <div>Document Number: {profile.documentNumber}</div>
-              <div>Residence: {profile.residence}</div>
-              <div>
-                Eligible to Vote: {profile.eligibleToVote ? 'Yes' : 'No'}
-              </div>
-              <div>Is Candidate: {profile.isCandidate ? 'Yes' : 'No'}</div>
-              <div>Proposal Name: {profile.proposal}</div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <hr className='my-4' />
-
-      <div>
-        <h2 className='text-lg font-semibold mt-4'>Ballot Contract Storage</h2>
-        {ballotData.chairpersonDetails && (
-          <div>
-            <p>
-              <strong>Chairperson Address:</strong>{' '}
-              {ballotData.chairpersonDetails.chairpersonAddress}
-            </p>
-            <p>
-              <strong>Voting Time:</strong>{' '}
-              {new Date(
-                Number(ballotData.chairpersonDetails.votingTime) * 1000
-              ).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}
-            </p>
-            <p>
-              <strong>Registration Time:</strong>{' '}
-              {new Date(
-                Number(ballotData.chairpersonDetails.registrationTime) * 1000
-              ).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}
-              ;
-            </p>
-            <p>
-              <strong>Number of Candidates:</strong>{' '}
-              {Number(ballotData.chairpersonDetails.numberOfCandidates)}
-            </p>
-          </div>
-        )}
-      </div>
-      <div>
-        <h2 className='text-lg font-semibold mt-4'>Voters</h2>
-        {ballotData.voters &&
-          ballotData.voters.map((voter, index) => (
-            <div key={index} className='my-2 p-2 bg-gray-100 rounded'>
-              <p>User Address: {voter.userAddress}</p>
-              <p>Weight: {Number(voter.weight)}</p>
-              <p>Voted: {voter.voted ? 'Yes' : 'No'}</p>
-              <p>Delegate: {voter.delegate}</p>
-              <p>Vote: {Number(voter.vote)}</p>
-            </div>
-          ))}
-
+    <div className='min-h-screen flex items-center justify-center'
+         style={{
+           backgroundImage: 'url("your-background-image-url")',
+           backgroundSize: 'cover',
+           backgroundPosition: 'center',
+           backgroundRepeat: 'no-repeat'
+         }}>
+      <div className='max-w-4xl mx-auto p-4 bg-gray-700 bg-opacity-80 rounded-lg shadow-lg text-gray-200'
+           style={{
+             boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+             textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+             transition: 'all 0.3s cubic-bezier(.25,.8,.25,1)',
+             transform: 'scale(1.01)',
+             backdropFilter: 'blur(10px)'
+           }}>
+        <h1 className='text-2xl font-bold text-center'>
+          Contract Storage Viewer
+        </h1>
+  
+        <div>
+          <h2 className='text-lg font-semibold mt-4'>
+            User Profile Contract Storage
+          </h2>
+          <ul>
+            {userProfileData.map((profile, index) => (
+              <li key={index} className='my-2 p-2 rounded border border-gray-300'>
+                <div>User Address: {profile.userAddress}</div>
+                <div>Name: {profile.name}</div>
+                <div>Age: {profile.age}</div>
+                <div>Document Number: {profile.documentNumber}</div>
+                <div>Residence: {profile.residence}</div>
+                <div>
+                  Eligible to Vote: {profile.eligibleToVote ? 'Yes' : 'No'}
+                </div>
+                <div>Is Candidate: {profile.isCandidate ? 'Yes' : 'No'}</div>
+                <div>Proposal Name: {profile.proposal}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+  
         <hr className='my-4' />
-
-        <h2 className='text-lg font-semibold mt-4'>Proposals</h2>
-        {ballotData.proposals &&
-          ballotData.proposals.map((proposal, index) => (
-            <div key={index} className='my-2 p-2 bg-gray-100 rounded'>
-              <p>Name: {proposal.name}</p>
-              <p>Vote Count: {Number(proposal.voteCount)}</p>
+  
+        <div>
+          <h2 className='text-lg font-semibold mt-4'>Ballot Contract Storage</h2>
+          {ballotData.chairpersonDetails && (
+            <div>
+              <p>
+                <strong>Chairperson Address:</strong>{' '}
+                {ballotData.chairpersonDetails.chairpersonAddress}
+              </p>
+              <p>
+                <strong>Voting Time:</strong>{' '}
+                {new Date(
+                  Number(ballotData.chairpersonDetails.votingTime) * 1000
+                ).toUTCString()}
+              </p>
+              <p>
+                <strong>Registration Time:</strong>{' '}
+                {new Date(
+                  Number(ballotData.chairpersonDetails.registrationTime) * 1000
+                ).toUTCString()}
+              </p>
+              <p>
+                <strong>Number of Candidates:</strong>{' '}
+                {Number(ballotData.chairpersonDetails.numberOfCandidates)}
+              </p>
             </div>
-          ))}
+          )}
+        </div>
       </div>
     </div>
   );

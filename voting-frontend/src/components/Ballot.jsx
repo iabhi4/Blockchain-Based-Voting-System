@@ -200,53 +200,57 @@ const Ballot = () => {
   };
 
   return (
-    <div className='max-w-xl mx-auto p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Ballot</h1>
-      <div>
-        <h2 className='text-lg font-semibold mb-2'>Proposals</h2>
-        <ul>
+    <div className='max-w-xl mx-auto p-4 bg-gray-700 bg-opacity-80 rounded-xl shadow-lg space-y-4 text-white'
+         style={{
+           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+           textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+           transition: 'all 0.3s cubic-bezier(.25,.8,.25,1)',
+           transform: 'scale(1.01)',
+           backdropFilter: 'blur(10px)'
+         }}>
+      <h1 className='text-2xl font-semibold text-center'>Ballot</h1>
+      <section>
+        <h2 className='text-lg font-medium'>Proposals</h2>
+        <ul className='list-none space-y-2'>
           {proposals.map((proposal, index) => (
-            <li key={index}>{proposal}</li>
+            <li key={index} className='flex justify-between items-center p-2 bg-transparent rounded-lg border border-gray-300'>
+              <span className='font-light'>Proposal {index + 1}</span>
+              <button onClick={() => handleVote(index)} className='px-4 py-2 bg-blue-500 rounded hover:bg-blue-600 transition duration-300'
+                      style={{
+                        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.4)'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)'}
+                      onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0px) scale(1)'}
+              >
+                Vote
+              </button>
+            </li>
           ))}
         </ul>
-      </div>
-      <div>
-        <h2 className='text-lg font-semibold mb-2'>Delegate Vote</h2>
+      </section>
+      <section>
+        <h2 className='text-lg font-medium'>Delegate Vote</h2>
         <input
           type='text'
           value={delegateAddress}
           onChange={(e) => setDelegateAddress(e.target.value)}
           placeholder='Enter delegate address'
-          disabled={!isBallotActive || disable}
-          className='w-full px-3 py-2 mb-2 rounded border'
+          className='w-full p-2 bg-transparent border border-gray-300 rounded focus:outline-none focus:ring-blue-500 focus:border-blue-500'
         />
-        <button
-          onClick={handleDelegateVote}
-          disabled={!isBallotActive || disable}
-          className='px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50'>
+        <button onClick={handleDelegateVote} className='mt-2 w-full p-2 bg-green-500 rounded hover:bg-green-600 transition duration-300'
+                style={{
+                  boxShadow: '0 5px 15px rgba(0, 0, 0, 0.4)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0px) scale(1)'}
+        >
           Delegate
         </button>
-      </div>
-      <div>
-        <h2 className='text-lg font-semibold mb-2'>Vote</h2>
-        <div>
-          {proposals.map((proposal, index) => (
-            <button
-              key={index}
-              onClick={() => handleVote(index)}
-              disabled={!isBallotActive || disable}
-              className='px-4 py-2 mr-2 mb-2 bg-green-500 text-white rounded disabled:opacity-50'>
-              Vote for {proposal}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <h2 className='text-lg font-semibold mb-2'>User Status</h2>
-        {!isBallotActive ? <p> </p> : <p>{userStatus}</p>}
-
-        <p>{votingStatus}</p>
-      </div>
+      </section>
+      <section>
+        <h2 className='text-lg font-medium'>User Status</h2>
+        <p className='p-2 bg-transparent rounded'>{userStatus}</p>
+      </section>
       <div>
         {showChart && (
           <Bar
@@ -279,8 +283,7 @@ const Ballot = () => {
                     stepSize: 1, // Ensure ticks at every integer
                     precision: 0, // No decimal places in the ticks
                     callback: function (value) {
-                      if (value % 1 === 0) {
-                        // Check if it's an integer
+                      if (value % 1 === 0) { // Check if it's an integer
                         return value;
                       }
                     },
