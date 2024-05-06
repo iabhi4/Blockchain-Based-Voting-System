@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import ballotJson from '../../../build/contracts/Ballot.json';
+import { Bar } from 'react-chartjs-2';
+import 'chart.js/auto';
 
 const Ballot = () => {
   const [contract, setContract] = useState(null);
@@ -13,6 +15,19 @@ const Ballot = () => {
   const [isBallotActive, setIsBallotActive] = useState(false);
   const [disable, setDisable] = useState(false);
   const [proposalsChecked, setProposalsChecked] = useState(false);
+  const [chartData, setChartData] = useState({
+    labels: [], // will hold proposal names or indices
+    datasets: [
+      {
+        label: 'Number of Votes',
+        data: [], // will hold votes count
+        fill: false,
+        backgroundColor: 'rgb(75, 192, 192)',
+        borderColor: 'rgba(75, 192, 192, 0.2)',
+      },
+    ],
+  });
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     const loadBlockchainData = async () => {
@@ -50,6 +65,7 @@ const Ballot = () => {
 
         if (hasVoted) {
           setDisable(true);
+          setShowChart(true);
         }
 
         const currentTime = new Date();
@@ -81,6 +97,19 @@ const Ballot = () => {
     loadBlockchainData();
   }, [proposalsChecked, userStatus]);
 
+  useEffect(() => {
+    let interval = null;
+    if (showChart) {
+      fetchChartData(); // Fetch immediately if chart is visible
+      interval = setInterval(fetchChartData, 10000); // Refresh the data every 10 seconds
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval); // Clear only when component unmounts
+      }
+    };
+  }, [contract]); // Depend on showChart and contract instance
+
   const fetchProposals = async (contract, userAddress) => {
     try {
       const fetchedProposals = await contract.methods.getProposals().call();
@@ -96,6 +125,34 @@ const Ballot = () => {
     } catch (error) {
       console.error('Error fetching proposals:', error);
     }
+  };
+
+  const fetchChartData = async () => {
+    console.log('Fetching data to update');
+    const proposalsCount = await contract.methods.proposalsCount().call();
+    const proposals = [];
+    for (let i = 0; i < proposalsCount; i++) {
+      const proposal = await contract.methods.getProposal(i).call();
+      proposals.push({
+        name: proposal.name,
+        voteCount: parseInt(proposal.voteCount),
+      });
+    }
+
+    setChartData({
+      labels: proposals.map((p) => p.name),
+      datasets: [
+        {
+          label: 'Number of Votes',
+          data: proposals.map((p) => p.voteCount),
+          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+      ],
+    });
+
+    setShowChart(true);
   };
 
   const handleDelegateVote = async () => {
@@ -114,6 +171,8 @@ const Ballot = () => {
         .delegate(delegateAddress)
         .send({ from: accounts[0] });
       setUserStatus('Delegate vote successful.');
+      setShowChart(true); // Show the chart after delegating
+      fetchChartData();
     } catch (error) {
       console.error('Error occurred while delegating vote:', error);
       setUserStatus('Failed to delegate vote.');
@@ -133,6 +192,8 @@ const Ballot = () => {
     try {
       await contract.methods.vote(index).send({ from: accounts[0] });
       setUserStatus(`You voted for proposal ${index + 1}.`);
+      setShowChart(true); // Show the chart after voting
+      fetchChartData(); // Refresh data and show chart
     } catch (error) {
       console.error('Error voting:', error);
     }
@@ -185,6 +246,50 @@ const Ballot = () => {
         {!isBallotActive ? <p> </p> : <p>{userStatus}</p>}
 
         <p>{votingStatus}</p>
+      </div>
+      <div>
+        {showChart && (
+          <Bar
+            data={chartData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                },
+              },
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Proposals', // X-axis label
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Vote Count', // Y-axis label
+                  },
+                  ticks: {
+                    stepSize: 1, // Ensure ticks at every integer
+                    precision: 0, // No decimal places in the ticks
+                    callback: function (value) {
+                      if (value % 1 === 0) {
+                        // Check if it's an integer
+                        return value;
+                      }
+                    },
+                  },
+                },
+              },
+            }}
+          />
+        )}
       </div>
     </div>
   );
