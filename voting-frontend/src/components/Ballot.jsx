@@ -254,7 +254,12 @@ const Ballot = () => {
         <h2 className='text-lg font-semibold text-gray-600 mb-2'>
           User Status
         </h2>
-        <p className='text-sm text-gray-800'>{userStatus}</p>
+        {!isBallotActive ? (
+          <p> </p>
+        ) : (
+          <p className='text-sm text-gray-800'>{userStatus}</p>
+        )}
+
         <p className='text-sm text-gray-800'>{votingStatus}</p>
       </div>
       {showChart && (
