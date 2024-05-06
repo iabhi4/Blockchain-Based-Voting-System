@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile Registration</title>
+</head>
+<body>
+    <h1>User Profile Registration</h1>
+    <form id="registrationForm">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required><br>
+
+      <label for="age">Age:</label>
+      <input type="number" id="age" name="age" required><br>
+
+      <label for="documentNumber">Document Number:</label>
+      <input type="text" id="documentNumber" name="documentNumber" required><br>
+
+      <label for="residence">Place of Residence:</label>
+      <input type="text" id="residence" name="residence" required><br>
+
+      <label for="isCandidate">Become a candidate:</label>
+      <select id="isCandidate" name="isCandidate" onchange="toggleProposalField()">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+      </select><br>
+
+      <div id="proposalField" style="display: none;">
+          <label for="proposalName">Proposal Name:</label>
+          <input type="text" id="proposalName" name="proposalName"><br>
+      </div>
+
+      <input type="submit" value="Submit">
+  </form>
+
+    <script src="UserProfileBuild.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+
+    <script src="UserProfile.js"></script>
+</body>
+</html>

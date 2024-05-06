@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ballot UI</title>
+</head>
+<body>
+    <h1>Ballot</h1>
+    <h2>Proposals</h2>
+    <ul id="proposalsList">
+        <!-- Populate this list dynamically with proposals -->
+    </ul>
+    
+    <h2>Delegate Vote</h2>
+    <input type="text" id="delegateAddress" placeholder="Enter delegate address">
+    <button id="delegateButton" onclick="delegateVote()">Delegate</button>
+
+    <h2>Vote</h2>
+    <div id="voteOptions">
+        <!-- Populate this section dynamically with vote options -->
+    </div>
+
+    <button id="fetchProposalsButton" onclick="fetchProposals()">Fetch Proposals</button>
+
+    <h2>User Status</h2>
+    <p id="userStatus"></p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+    <script src="BallotBuild.js"></script>
+    <script src="Ballot.js"></script>
+</body>
+</html>
