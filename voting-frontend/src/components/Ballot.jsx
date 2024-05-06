@@ -45,7 +45,13 @@ const Ballot = () => {
           contractAddress
         );
         setContract(loadedContract);
-
+        const hasRegistered = await loadedContract.methods
+          .checkEligibilityToVote(userAddress)
+          .call();
+        if (!hasRegistered) {
+          alert('You are not eligible to vote in this ballot.');
+          return setUserStatus('You are not eligible to vote.');
+        }
         const voterExists = await loadedContract.methods
           .checkVoterExists(userAddress)
           .call();
@@ -93,7 +99,6 @@ const Ballot = () => {
         console.log('Non-Ethereum browser detected. Consider trying MetaMask!');
       }
     };
-
     loadBlockchainData();
   }, [proposalsChecked, userStatus]);
 
