@@ -62,6 +62,18 @@ const UserProfile = () => {
             .checkUserExists(account)
             .call();
     if (hasRegistered) return alert('User profile already registered!');
+    // Verify document number with external API
+    try {
+      const verificationResponse = await axios.post('http://localhost:3000/verifyDocument', {
+        documentNumber
+      });
+      if (!verificationResponse.data.verified) {
+        return alert('Registration declined: user not found in database.');
+      }
+    } catch (error) {
+      console.error('Verification failed', error);
+      return alert('Failed to verify user document number.');
+    }
     try {
       await userProfileContract.methods
         .registerUserProfile(
